@@ -46,6 +46,7 @@ release = ross.__version__
 # ones.
 extensions = [
     "sphinx.ext.autodoc",
+    "sphinx_marimo",
     "myst_nb",
     "sphinxcontrib.bibtex",
     "sphinx_copybutton",
@@ -75,6 +76,13 @@ templates_path = ["_templates"]
 #
 source_suffix = [".rst", ".md", ".ipynb"]
 
+# --- Configuração sphinx-marimo ---
+marimo_notebook_dir = "user_guide"
+marimo_default_height = "600px"
+marimo_default_width = "100%"
+marimo_click_to_load = False  # Carrega o notebook ao abrir a página (sem botão)
+marimo_load_button_text = "Carregar Notebook Interativo"
+
 # The master toctree document.
 master_doc = "index"
 
@@ -92,7 +100,12 @@ suppress_warnings = ["bibtex.duplicate_citation"]
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.
 # This patterns also effect to html_static_path and html_extra_path
-exclude_patterns = ["_build", "Thumbs.db", ".DS_Store"]
+exclude_patterns = [
+    "_build",
+    "Thumbs.db",
+    ".DS_Store",
+    "user_guide/*.ipynb",  # Migrados para marimo (.py + .rst)
+]
 
 # The name of the Pygments (syntax highlighting) style to use.
 pygments_style = "abap"

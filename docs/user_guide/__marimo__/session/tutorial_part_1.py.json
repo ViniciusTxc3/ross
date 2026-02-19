@@ -1,0 +1,1261 @@
+{
+  "version": "1",
+  "metadata": {
+    "marimo_version": "0.19.9"
+  },
+  "cells": [
+    {
+      "id": "MJUe",
+      "code_hash": "d2775288e31b8de087d4918b9a489c54",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><h1 id=\"tutorial-modeling\">Tutorial - Modeling</h1></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "vblA",
+      "code_hash": "d7d990574497a491b0c6f9e394b6591a",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><span class=\"paragraph\">This is a basic tutorial on how to use ROSS (rotordynamics open-source software), a Python library for rotordynamic analysis. Most of this code follows object-oriented paradigm, which is represented in this\n<a href=\"https://user-images.githubusercontent.com/32821252/50386686-131c5200-06d3-11e9-9806-f5746295be81.png\" rel=\"noopener noreferrer\" target=\"_blank\">UML DIAGRAM</a>.</span>\n<span class=\"paragraph\">Also <a href=\"https://bit.ly/rossgpt\" rel=\"noopener noreferrer\" target=\"_blank\"><strong>ROSS GPT</strong></a>, is a virtual assistant trained specifically for the ROSS package.</span>\n<span class=\"paragraph\">Before starting the tutorial, it is worth noting some of ROSS' design characteristics.</span>\n<span class=\"paragraph\">First, we can divide the use of ROSS in two steps:</span>\n<div class=\"language-text highlight\"><pre><span></span><code>- Building the model;\n\n- Calculating the results.\n</code></pre></div>\n<span class=\"paragraph\">We can build a model by instantiating elements such as beams (shaft), disks and bearings. These elements are all defined in classes with names such as <code>ShaftElement</code>, <code>BearingElement</code> and so on.</span>\n<span class=\"paragraph\">After instantiating some elements, we can then use these to build a rotor.</span>\n<span class=\"paragraph\">This tutorial is about building your <strong>rotor model</strong>. First, you will learn how to create and assign <strong>materials</strong>, how to instantiate the <strong>elements</strong> which compose the rotor and how to convert <strong>units</strong> in ROSS with <a href=\"https://pint.readthedocs.io/en/stable/\" rel=\"noopener noreferrer\" target=\"_blank\">pint</a> library. This means that every time we call a function, we can use pint.Quantity as an argument for values that have units. If we give a float to the function ROSS will consider SI units as default.</span>\n<span class=\"paragraph\">In the following topics, we will discuss the most relevant classes for a quick start on how to use ROSS.</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "lEQa",
+      "code_hash": "416d79249402ed502d34bd67fc43d046",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><h2 id=\"section-1-material-class\">Section 1: Material Class</h2>\n<span class=\"paragraph\">There is a class called Material to hold material's properties. Materials are applied to shaft and disk elements.</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "PKri",
+      "code_hash": "d2b5419d7732eb93675270b3e8ccade6",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><h3 id=\"11-creating-a-material\">1.1 Creating a material</h3>\n<span class=\"paragraph\">To instantiate a Material class, you only need to give 2 out of\nthe following parameters: <code>E</code> (Young's Modulus), <code>G_s</code> (Shear\nModulus) ,<code>Poisson</code> (Poisson Coefficient), and the material\ndensity <code>rho</code>.</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "SFPL",
+      "code_hash": "aaa378955f6d8e98c3c2d5b0fa1d9353",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><span class=\"paragraph\"><strong>Note</strong>: Adding 3 arguments to the Material class raises an error.</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "BYtC",
+      "code_hash": "7af55142d4531737d9a1164dd8d0a821",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><h3 id=\"12-saving-materials\">1.2 Saving materials</h3>\n<span class=\"paragraph\">To save an already instantiated Material object, you need to use the following method.</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "Kclp",
+      "code_hash": "93173c4f791093c410d4ba73f204a841",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><h3 id=\"13-available-materials\">1.3 Available materials</h3>\n<span class=\"paragraph\">Saved Materials are stored in a <strong>.toml file</strong>, which can be read as .txt. The file is placed on ROSS root file with name <code>available_materials.toml</code>.</span>\n<span class=\"paragraph\">It's possible to access the Material data from the file. With the file opened, you can:</span>\n<div class=\"language-text highlight\"><pre><span></span><code>- modify the properties directly;\n\n- create new materials;\n</code></pre></div>\n<span class=\"paragraph\">It's important to <strong>keep the file structure</strong> to ensure the correct functioning of the class.</span>\n<div class=\"language-ini codehilite\"><pre><span></span><code><span class=\"k\">[Materials.Steel]</span>\n<span class=\"na\">name</span><span class=\"w\"> </span><span class=\"o\">=</span><span class=\"w\"> </span><span class=\"s\">&quot;Steel&quot;</span>\n<span class=\"na\">rho</span><span class=\"w\"> </span><span class=\"o\">=</span><span class=\"w\"> </span><span class=\"s\">7810</span>\n<span class=\"na\">E</span><span class=\"w\"> </span><span class=\"o\">=</span><span class=\"w\"> </span><span class=\"s\">211000000000.0</span>\n<span class=\"na\">Poisson</span><span class=\"w\"> </span><span class=\"o\">=</span><span class=\"w\"> </span><span class=\"s\">0.2992610837438423</span>\n<span class=\"na\">G_s</span><span class=\"w\"> </span><span class=\"o\">=</span><span class=\"w\"> </span><span class=\"s\">81200000000.0</span>\n<span class=\"na\">color</span><span class=\"w\"> </span><span class=\"o\">=</span><span class=\"w\"> </span><span class=\"s\">&quot;#525252&quot;</span>\n</code></pre></div>\n<span class=\"paragraph\"><strong>Do not change the dictionary keys and the order they're built</strong>.</span>\n<span class=\"paragraph\">To check what materials are available, use the command:</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "Hstk",
+      "code_hash": "58911dbc891cd3120a3dadacf964b1f5",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><h3 id=\"14-loading-materials\">1.4 Loading materials</h3>\n<span class=\"paragraph\">After checking the available materials, you should use the <code>Material.use_material('name')</code> method with the <strong>name of the material</strong> as a parameter.</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "iLit",
+      "code_hash": "25f227091c53f5a0cff2616f45dc6d2f",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><h2 id=\"section-2-shaftelement-class\">Section 2: ShaftElement Class</h2>\n<span class=\"paragraph\"><code>ShaftElement</code> allows you to create cylindrical and conical shaft elements. It means you can set differents outer and inner diameters for each element node.</span>\n<span class=\"paragraph\">There are some ways in which you can choose the parameters to model this element:</span>\n<ul>\n<li>Euler\u2013Bernoulli beam Theory (<code>rotary_inertia=False, shear_effects=False</code>)</li>\n<li>Timoshenko beam Theory (<code>rotary_inertia=True, shear_effects=True</code> - used as default)</li>\n</ul>\n<span class=\"paragraph\">The matrices (mass, stiffness, damping and gyroscopic) will be defined considering the following local coordinate vector:</span>\n<span class=\"paragraph\"><marimo-tex class=\"arithmatex\">||([x_0, y_0, \\alpha_0, \\beta_0, x_1, y_1, \\alpha_1, \\beta_1]^T||)</marimo-tex>\nWhere\n<marimo-tex class=\"arithmatex\">||(\\alpha_0||)</marimo-tex> and <marimo-tex class=\"arithmatex\">||(\\alpha_1||)</marimo-tex> are the bending on the yz plane\n<marimo-tex class=\"arithmatex\">||(\\beta_0||)</marimo-tex> and <marimo-tex class=\"arithmatex\">||(\\beta_1||)</marimo-tex> are the bending on the xz plane.</span>\n<span class=\"paragraph\">This element represents the rotor's shaft, all the other elements are correlated with this one.</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "ZHCJ",
+      "code_hash": "a3e49cf550386baafe4352ae2b23bd05",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><h3 id=\"21-creating-shaft-elements\">2.1 Creating shaft elements</h3>\n<span class=\"paragraph\">The next examples present different ways of how to create a ShaftElement object, from a single element to a list of several shaft elements with different properties.</span>\n<span class=\"paragraph\">When creating shaft elements, you don't necessarily need to input a specific node. If <code>n=None</code>, the <code>Rotor</code> class will assign a value to the element when building a rotor model (<em>see section 6</em>).</span>\n<span class=\"paragraph\">You can also pass the same <code>n</code> value to several shaft elements in the same rotor model.</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "ROlb",
+      "code_hash": "7b205f2c0cf9d4889047193a496ba7e0",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><h4 id=\"211-cylindrical-shaft-element\">2.1.1 Cylindrical shaft element</h4>\n<span class=\"paragraph\">As it's been seen, a shaft element has 4 parameters for diameters. To simplify that, when creating a cylindrical element, you only need to give 2 of them: <code>idl</code> and <code>odl</code>. So the other 2 (<code>idr</code> and <code>odr</code>) get the same values.</span>\n<span class=\"paragraph\"><strong>Note</strong>: you can give all the 4 parameters, as long they match each other.</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "TqIu",
+      "code_hash": "53aad3276637117d431daf76a0f47111",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><h4 id=\"212-conical-shaft-element\">2.1.2 Conical shaft element</h4>\n<span class=\"paragraph\">To create conical shaft elements, you must give all the 4 diameter parameters, and <code>idl != idr</code> and/or <code>odl != odr</code>.</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "DnEU",
+      "code_hash": "b2b33ed63212fc9a5ec8155ac4beabc1",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><h4 id=\"returning-element-matrices\">Returning element matrices</h4>\n<span class=\"paragraph\">Use one of this methods to return the matrices:</span>\n<ul>\n<li><code>.M()</code>: returns the mass matrix</li>\n<li><code>.K(frequency)</code>: returns the stiffness matrix</li>\n<li><code>.C(frequency)</code>: returns the damping matrix</li>\n<li><code>.G()</code>: returns the gyroscopic matrix</li>\n</ul></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "ecfG",
+      "code_hash": "8c859180d5d71e3e889499208d1ca6fa",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><h4 id=\"213-list-of-elements-identical-properties\">2.1.3 List of elements - identical properties</h4>\n<span class=\"paragraph\">Now we learned how to create elements, let's automate the process of creating multiple elements with identical properties.</span>\n<span class=\"paragraph\">In this example, we want 6 shaft elements with identical properties. This process can be done using a <code>for</code> loop or a list comprehension.</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "ZBYS",
+      "code_hash": "58c1f80effc2cb979ab281251b8b4a2a",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><h4 id=\"214-list-of-elements-different-properties\">2.1.4 List of elements - different properties</h4>\n<span class=\"paragraph\">Now we learned how to create elements, let's automate the process of creating multiple elements with different properties.</span>\n<span class=\"paragraph\">In this example, we want 6 shaft elements which properties may not be the same. This process can be done using a <code>for</code> loop or a list comprehension, coupled with Python's <code>zip()</code> method.</span>\n<span class=\"paragraph\">We create lists for each property, where each term refers to a single element:</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "xXTn",
+      "code_hash": "f84afeeaff7392779cd039cb76b2c829",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><h3 id=\"22-creating-shaft-elements-via-excel\">2.2 Creating shaft elements via Excel</h3>\n<span class=\"paragraph\">There is an option for creating a list of shaft elements via an Excel file. The classmethod <code>.from_table()</code> reads an Excel file created and converts it to a list of shaft elements.</span>\n<span class=\"paragraph\">A header with the names of the columns is required. These names should match the names expected by the routine (usually the names of the parameters, but also similar ones). The program will read every row bellow the header until they end or it reaches a NaN, which means if the code reaches to an empty line, it stops iterating.</span>\n<span class=\"paragraph\">An example of Excel content can be found at ROSS GitHub repository at <em>ross/tests/data/shaft_si.xls</em>, spreadsheet \"Model\".</span>\n<span class=\"paragraph\">You can load it using the following code.</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "AjVT",
+      "code_hash": "ad029076da0165a22afe208f0eda82a5",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><div class=\"language-python codehilite\"><pre><span></span><code><span class=\"n\">shaft_file</span> <span class=\"o\">=</span> <span class=\"n\">Path</span><span class=\"p\">(</span><span class=\"s2\">&quot;shaft_si.xls&quot;</span><span class=\"p\">)</span>\n<span class=\"n\">shaft</span> <span class=\"o\">=</span> <span class=\"n\">rs</span><span class=\"o\">.</span><span class=\"n\">ShaftElement</span><span class=\"o\">.</span><span class=\"n\">from_table</span><span class=\"p\">(</span>\n    <span class=\"n\">file</span><span class=\"o\">=</span><span class=\"n\">shaft_file</span><span class=\"p\">,</span> <span class=\"n\">sheet_type</span><span class=\"o\">=</span><span class=\"s2\">&quot;Model&quot;</span><span class=\"p\">,</span> <span class=\"n\">sheet_name</span><span class=\"o\">=</span><span class=\"s2\">&quot;Model&quot;</span>\n<span class=\"p\">)</span>\n</code></pre></div></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "pHFh",
+      "code_hash": "ffd0dfe99ddf4160432f33fce405f6a2",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><h3 id=\"23-creating-coupling-element-couplingelement-class\">2.3 Creating coupling element (CouplingElement Class)</h3>\n<span class=\"paragraph\">Here, we introduce the <code>CouplingElement</code> class, a subclass of the <code>ShaftElement</code> class, designed to model the interaction between two rotor shafts. This element is implemented in a general form in ROSS. The coupling plays a crucial role in mechanical systems by transmitting forces, vibrations, and motion between rotating shafts. It is primarily characterized by adding stiffness, mass, and inertia to the system, which are essential for simulating the real-world behavior of coupled rotors.</span>\n<span class=\"paragraph\"><strong>Steps:</strong></span>\n<ul>\n<li>Create two shafts: Start by defining two rotor shafts using the <code>ShaftElement</code> class. Each shaft can have its own properties like material, length, and diameter.</li>\n<li>Join shafts with coupling: Use the <code>CouplingElement</code> class to connect the two shafts by inserting the elements in a list following a certain order.</li>\n</ul></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "NCOB",
+      "code_hash": "789945c00e583f87c513b58607dcc695",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><h4 id=\"231-define-the-shafts-with-their-respective-dimensions-and-properties\">2.3.1 Define the shafts with their respective dimensions and properties</h4></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "TXez",
+      "code_hash": "ed00133296835b8a28f80518de9748e2",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><h4 id=\"232-define-the-coupling-element-that-connects-the-two-shafts\">2.3.2 Define the coupling element that connects the two shafts</h4></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "dNNg",
+      "code_hash": "0e31f8689dbb2b75f1790c1b45c57774",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><span class=\"paragraph\">In this example, only the torsional stiffness is adopted. However, you can pass any of the following arguments (if not provided, the default value is zero):</span>\n<ul>\n<li>kt_x,</li>\n<li>kt_y,</li>\n<li>kt_z (axial stiffness),</li>\n<li>kr_x,</li>\n<li>kr_y,</li>\n<li>kr_z (torsional stiffness),</li>\n</ul>\n<span class=\"paragraph\">considering that the stiffness matrix <marimo-tex class=\"arithmatex\">||(\\mathbf{K}||)</marimo-tex> will be assembled like this:</span>\n<marimo-tex class=\"arithmatex\">||[\\begin{equation}\n\\mathbf{K} =\n\\begin{bmatrix}\nk_{t_x} &amp; 0 &amp; 0 &amp; 0 &amp; 0 &amp; 0 &amp; -k_{t_x} &amp; 0 &amp; 0 &amp; 0 &amp; 0 &amp; 0 \\\\\n0 &amp; k_{t_y} &amp; 0 &amp; 0 &amp; 0 &amp; 0 &amp; 0 &amp; -k_{t_y} &amp; 0 &amp; 0 &amp; 0 &amp; 0 \\\\\n0 &amp; 0 &amp; k_{t_z} &amp; 0 &amp; 0 &amp; 0 &amp; 0 &amp; 0 &amp; -k_{t_z} &amp; 0 &amp; 0 &amp; 0 \\\\\n0 &amp; 0 &amp; 0 &amp; k_{r_x} &amp; 0 &amp; 0 &amp; 0 &amp; 0 &amp; 0 &amp; -k_{r_x} &amp; 0 &amp; 0 \\\\\n0 &amp; 0 &amp; 0 &amp; 0 &amp; k_{r_y} &amp; 0 &amp; 0 &amp; 0 &amp; 0 &amp; 0 &amp; -k_{r_y} &amp; 0 \\\\\n0 &amp; 0 &amp; 0 &amp; 0 &amp; 0 &amp; k_{r_z} &amp; 0 &amp; 0 &amp; 0 &amp; 0 &amp; 0 &amp; -k_{r_z} \\\\\n-k_{t_x} &amp; 0 &amp; 0 &amp; 0 &amp; 0 &amp; 0 &amp; k_{t_x} &amp; 0 &amp; 0 &amp; 0 &amp; 0 &amp; 0 \\\\\n0 &amp; -k_{t_y} &amp; 0 &amp; 0 &amp; 0 &amp; 0 &amp; 0 &amp; k_{t_y} &amp; 0 &amp; 0 &amp; 0 &amp; 0 \\\\\n0 &amp; 0 &amp; -k_{t_z} &amp; 0 &amp; 0 &amp; 0 &amp; 0 &amp; 0 &amp; k_{t_z} &amp; 0 &amp; 0 &amp; 0 \\\\\n0 &amp; 0 &amp; 0 &amp; -k_{r_x} &amp; 0 &amp; 0 &amp; 0 &amp; 0 &amp; 0 &amp; k_{r_x} &amp; 0 &amp; 0 \\\\\n0 &amp; 0 &amp; 0 &amp; 0 &amp; -k_{r_y} &amp; 0 &amp; 0 &amp; 0 &amp; 0 &amp; 0 &amp; k_{r_y} &amp; 0 \\\\\n0 &amp; 0 &amp; 0 &amp; 0 &amp; 0 &amp; -k_{r_z} &amp; 0 &amp; 0 &amp; 0 &amp; 0 &amp; 0 &amp; k_{r_z}\n\\end{bmatrix}\n\\end{equation}||]</marimo-tex><span class=\"paragraph\"><strong>Note:</strong> Although not demonstrated here, the same logic used for stiffness coefficients can also be applied to damping coefficients (ct_x, ct_y, ct_z, cr_x, cr_y, cr_z).</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "wlCL",
+      "code_hash": "0fdae03c96cab6c2c45aac467aef11c8",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><h4 id=\"233-coupling-all-elements\">2.3.3 Coupling all elements</h4>\n<span class=\"paragraph\">Combine all elements into a single list for the rotor model.\nThe elements must be in order.</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "wAgl",
+      "code_hash": "23ad2f22ae5f1b4e80562bddea91af2f",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><h2 id=\"section-3-diskelement-class\">Section 3: DiskElement Class</h2>\n<span class=\"paragraph\">The class <code>DiskElement</code> allows you to create disk elements, representing rotor equipments which can be considered only to add mass and inertia to the system, disregarding the stiffness.</span>\n<span class=\"paragraph\">ROSS offers 3 (three) ways to create a disk element:</span>\n<ol>\n<li>Inputing mass and inertia data</li>\n<li>Inputing geometrical and material data</li>\n<li>From Excel table</li>\n</ol></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "rEll",
+      "code_hash": "cf2f258dc945c99beea92a7eb1a1412e",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><h3 id=\"31-creating-disk-elements-from-inertia-properties\">3.1 Creating disk elements from inertia properties</h3>\n<span class=\"paragraph\">If you have access to the mass and inertia properties of a equipment, you can input the data directly to the element.</span>\n<span class=\"paragraph\">Disk elements are useful to represent equipments which mass and inertia are significant, but the stiffness can be neglected.</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "dGlV",
+      "code_hash": "916d261068fcc4dbb12644fc2009df3a",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><h4 id=\"311-creating-a-single-disk-element\">3.1.1 Creating a single disk element</h4>\n<span class=\"paragraph\">This example below shows how to instantiate a disk element according to the mass and inertia properties:</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "lgWD",
+      "code_hash": "5977dbf789ea3a74aa28914918573df6",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><h4 id=\"312-creating-a-list-of-disk-element\">3.1.2 Creating a list of disk element</h4>\n<span class=\"paragraph\">This example below shows how to create a list of disk element according to the mass and inertia properties. The logic is the same applied to shaft elements.</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "LJZf",
+      "code_hash": "83d576155c44cea0503196261d93c431",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><h3 id=\"32-creating-disk-elements-from-geometrical-properties\">3.2 Creating disk elements from geometrical properties</h3>\n<span class=\"paragraph\">Besides the instantiation previously explained, there is a way to instantiate a DiskElement with only geometrical parameters (an approximation for cylindrical disks) and the disk\u2019s material, as we can see in the following code. In this case, there's a class method (<code>rs.DiskElement.from_geometry()</code>) which you can use.</span>\n<span class=\"paragraph\">ROSS will take geometrical parameters (outer and inner diameters, and width) and convert them into mass and inertia data. Once again, considering the disk as a cylinder.</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "urSm",
+      "code_hash": "0ab8877e0558b7c03e2979d7cdc0971f",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><h4 id=\"321-creating-a-single-disk-element\">3.2.1 Creating a single disk element</h4>\n<span class=\"paragraph\">This example below shows how to instantiate a disk element according to the geometrical and material properties:</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "mWxS",
+      "code_hash": "1e01078e2b030dda0d50e718b542cae6",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><h4 id=\"322-creating-a-list-of-disk-element\">3.2.2 Creating a list of disk element</h4>\n<span class=\"paragraph\">This example below shows how to create a list of disk element according to the geometrical and material properties. The logic is the same applied to shaft elements.</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "zlud",
+      "code_hash": "adc12b93bf8595938fc5552d5824846e",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><h3 id=\"33-creating-disk-elements-via-excel\">3.3 Creating disk elements via Excel</h3>\n<span class=\"paragraph\">The third option for creating disk elements is via an Excel file. The classmethod <code>.from_table()</code> reads an Excel file created and converts it to a list of disk elements. This method accepts <strong>only mass and inertia</strong> inputs.</span>\n<span class=\"paragraph\">A header with the names of the columns is required. These names should match the names expected by the routine (usually the names of the parameters, but also similar ones). The program will read every row bellow the header until they end or it reaches a NaN, which means if the code reaches to an empty line, it stops iterating.</span>\n<span class=\"paragraph\">You can take advantage of the excel file used to assemble shaft elements, to assemble disk elements, just add a new spreadsheet to your Excel file and specify the correct <code>sheet_name</code>.</span>\n<span class=\"paragraph\">An example of Excel content can be found at diretory <em>ross/tests/data/shaft_si.xls</em>, spreadsheet \"More\".</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "xvXZ",
+      "code_hash": "9dfc1267c2969df4d24e6db14d498766",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><h2 id=\"section-4-bearing-and-seal-classes\">Section 4: Bearing and Seal Classes</h2>\n<span class=\"paragraph\">ROSS has a series of classes to represent elements that add stiffness and / or damping to a rotor system.\nThey're suitable to represent mainly bearings, supports and seals. Each one aims to represent some types of bearing and seal.</span>\n<span class=\"paragraph\">All the classes will return four stiffness coefficients (<marimo-tex class=\"arithmatex\">||(k_{xx}||)</marimo-tex>, <marimo-tex class=\"arithmatex\">||(k_{xy}||)</marimo-tex>, <marimo-tex class=\"arithmatex\">||(k_{yx}||)</marimo-tex>, <marimo-tex class=\"arithmatex\">||(k_{yy}||)</marimo-tex>) and four damping coefficients (<marimo-tex class=\"arithmatex\">||(c_{xx}||)</marimo-tex>, <marimo-tex class=\"arithmatex\">||(c_{xy}||)</marimo-tex>, <marimo-tex class=\"arithmatex\">||(c_{yx}||)</marimo-tex>, <marimo-tex class=\"arithmatex\">||(c_{yy}||)</marimo-tex>), which will be used to assemble the stiffness and damping matrices.</span>\n<span class=\"paragraph\">The main difference between these classes are the arguments the user must input to create the element.</span>\n<span class=\"paragraph\">Available bearing classes and class methods:</span>\n<ul>\n<li>\n<ol>\n<li><code>BearingElement</code>: represents a general (journal) bearing element.</li>\n</ol>\n</li>\n<li>\n<ol start=\"2\">\n<li><code>SealElement</code>: represents a general seal element.</li>\n</ol>\n</li>\n<li>\n<ol start=\"3\">\n<li><code>BallBearingElement</code>: A bearing element for ball bearings</li>\n</ol>\n</li>\n<li>\n<ol start=\"4\">\n<li><code>RollerBearingElement</code>: A bearing element for roller bearings.</li>\n</ol>\n</li>\n<li>\n<ol start=\"5\">\n<li><code>MagneticBearingElement</code>: A bearing element for magnetic bearings.</li>\n</ol>\n<ul>\n<li>5.1. <code>param_to_coef</code>: A bearing element for magnetic bearings from electromagnetic parameters</li>\n</ul>\n</li>\n<li>\n<ol start=\"6\">\n<li><code>PlainJournal</code>: A cylindrical bearing element based on the pressure and temperature field in oil film.</li>\n</ol>\n</li>\n</ul>\n<span class=\"paragraph\">The classes from item 2 to 6 inherit from <code>BearingElement</code> class. It means, you can use the same methods and commands, set up to <code>BearingElement</code>, in the other classes.</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "CLip",
+      "code_hash": "17790afd874f42e56a0f09b0099b46ef",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><h3 id=\"41-bearingelement-class\">4.1 BearingElement Class</h3>\n<span class=\"paragraph\">This class will create a bearing element. Bearings are elements that only add stiffness and damping properties to the rotor system. These parameters are defined by 8 dynamic coefficients (4 stiffness coefficients and 4 damping coefficients).</span>\n<span class=\"paragraph\">Parameters can be a constant value or speed dependent. For speed dependent parameters, each argument should be passed as an array and the correspondent speed values should also be\npassed as an array. Values for each parameter will be interpolated for the speed.</span>\n<span class=\"paragraph\">Bearing elements are single node elements and linked to \"ground\", but it's possible to create a new node with <code>n_link</code> argument to introduce a link with other elements. Useful to add bearings in series or co-axial rotors.</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "YECM",
+      "code_hash": "c81d9b12fb78b6ade848ab0dd918559b",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><h4 id=\"411-bearing-with-constant-coefficients\">4.1.1 Bearing with constant coefficients</h4>\n<span class=\"paragraph\">Bearings can have a constant value for each coefficient. In this case, it's <strong>not necessary</strong> to give a value to <code>frequency</code> argument.</span>\n<span class=\"paragraph\">The next example shows how to instantiate a <strong>single bearing with constant coefficients</strong>:</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "iXej",
+      "code_hash": "b93b8fd39819720950521305f2bb6451",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><h4 id=\"412-bearing-with-varying-coefficients\">4.1.2 Bearing with varying coefficients</h4>\n<span class=\"paragraph\">The coefficients could be an array with different values for different rotation speeds, in that case you only have to give a parameter 'frequency' which is a array with the same size as the coefficients array.</span>\n<span class=\"paragraph\">The next example shows how to instantiate a <strong>single bearing with speed dependent parameters</strong>:</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "UmEG",
+      "code_hash": "bb884f69e4c244d170fffd977e476871",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><span class=\"paragraph\">If the size of coefficient and frequency arrays do not match, an <code>ValueError</code> is raised</span>\n<span class=\"paragraph\">The next example shows the instantiate of a <strong>bearing with odd parameters</strong>:</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "vEBW",
+      "code_hash": "3e8e9819fb353c3bde084a1847f0b8f4",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><div class=\"language-python codehilite\"><pre><span></span><code><span class=\"n\">bearing_odd</span> <span class=\"o\">=</span> <span class=\"n\">rs</span><span class=\"o\">.</span><span class=\"n\">BearingElement</span><span class=\"p\">(</span> <span class=\"c1\"># odd dimensions</span>\n    <span class=\"n\">n</span><span class=\"o\">=</span><span class=\"mi\">0</span><span class=\"p\">,</span>\n    <span class=\"n\">kxx</span><span class=\"o\">=</span><span class=\"n\">np</span><span class=\"o\">.</span><span class=\"n\">array</span><span class=\"p\">([</span><span class=\"mf\">0.5e6</span><span class=\"p\">,</span> <span class=\"mf\">1.0e6</span><span class=\"p\">,</span> <span class=\"mf\">2.5e6</span><span class=\"p\">]),</span>\n    <span class=\"n\">kyy</span><span class=\"o\">=</span><span class=\"n\">np</span><span class=\"o\">.</span><span class=\"n\">array</span><span class=\"p\">([</span><span class=\"mf\">1.5e6</span><span class=\"p\">,</span> <span class=\"mf\">2.0e6</span><span class=\"p\">,</span> <span class=\"mf\">3.5e6</span><span class=\"p\">]),</span>\n    <span class=\"n\">cxx</span><span class=\"o\">=</span><span class=\"n\">np</span><span class=\"o\">.</span><span class=\"n\">array</span><span class=\"p\">([</span><span class=\"mf\">0.5e3</span><span class=\"p\">,</span> <span class=\"mf\">1.0e3</span><span class=\"p\">,</span> <span class=\"mf\">1.5e3</span><span class=\"p\">]),</span>\n    <span class=\"n\">frequency</span><span class=\"o\">=</span><span class=\"n\">np</span><span class=\"o\">.</span><span class=\"n\">array</span><span class=\"p\">([</span><span class=\"mi\">0</span><span class=\"p\">,</span> <span class=\"mi\">1000</span><span class=\"p\">,</span> <span class=\"mi\">2000</span><span class=\"p\">,</span> <span class=\"mi\">3000</span><span class=\"p\">])</span>\n<span class=\"p\">)</span>\n</code></pre></div></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "kLmu",
+      "code_hash": "6d7e9927fc642714467d7a84f322608d",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><h4 id=\"413-inserting-bearing-elements-in-series\">4.1.3 Inserting bearing elements in series</h4>\n<span class=\"paragraph\">Bearing and seal elements are 1-node element, which means the element attaches to a given node from the rotor shaft and it's connect to the \"ground\". However, there's an option to couple multiple elements in series, using the <code>n_link</code> argument. This is very useful to simulate structures which support the machine, for example.</span>\n<span class=\"paragraph\"><code>n_link</code> opens a new node to the rotor system, or it can be associated to another rotor node (useful in co-axial rotor models). Then, the new BearingElement node, is set equal to the <code>n_link</code> from the previous element.</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "dxZZ",
+      "code_hash": "e13483069e2dd794ac13ef6ac429bfa2",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><h4 id=\"414-visualizing-coefficients-graphically\">4.1.4 Visualizing coefficients graphically</h4>\n<span class=\"paragraph\">If you want to visualize how the coefficients varies with speed, you can select a specific coefficient and use the <code>.plot()</code> method.</span>\n<span class=\"paragraph\">Let's return to the example done in <strong>4.1.2</strong> and check how <marimo-tex class=\"arithmatex\">||(k_{yy}||)</marimo-tex> and <marimo-tex class=\"arithmatex\">||(c_{yy}||)</marimo-tex> varies. You can check for all the 8 dynamic coefficients as you like.</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "IaQp",
+      "code_hash": "825da857c0f254494ee2b69b6b19fdeb",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><h3 id=\"42-sealelement-class\">4.2 SealElement Class</h3>\n<span class=\"paragraph\"><code>SealElement</code> class method have the exactly same arguments than <code>BearingElement</code>. The differences are found in some considerations when assembbling a full rotor model. For example, a SealElement won't generate reaction forces in a static analysis. So, even they are very similar when built, they have different roles in the model.</span>\n<span class=\"paragraph\">Let's see an example:</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "fCoF",
+      "code_hash": "9852215bc041a0991a07eaca03f07f60",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><h3 id=\"43-ballbearingelement-class\">4.3 BallBearingElement Class</h3>\n<span class=\"paragraph\">This class will create a bearing element based on some geometric and constructive parameters of ball bearings. The main difference is that cross-coupling stiffness and damping are not modeled in this case.</span>\n<span class=\"paragraph\">Let's see an example:</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "zVRe",
+      "code_hash": "a4eacd00448dacf8fd8875e64eeac7f8",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><h3 id=\"44-rollerbearingelement-class\">4.4 RollerBearingElement Class</h3>\n<span class=\"paragraph\">This class will create a bearing element based on some geometric and constructive parameters of roller bearings. The main difference is that cross-coupling stiffness and damping are not modeled in this case.</span>\n<span class=\"paragraph\">Let's see an example:</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "HnMC",
+      "code_hash": "32797eaeb3b0c4f75db2516fb6ccc2de",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><h3 id=\"45-magneticbearingelement-class\">4.5 MagneticBearingElement Class</h3>\n<span class=\"paragraph\">This class creates a magnetic bearing element. You can input electromagnetic parameters and PID gains. ROSS converts them to stiffness and damping coefficients. To do it, use the class <code>MagneticBearingElement()</code></span>\n<span class=\"paragraph\">See the following reference for the electromagnetic parameters g0, i0, ag, nw, alpha:\nBook: Magnetic Bearings. Theory, Design, and Application to Rotating Machinery\nAuthors: Gerhard Schweitzer and Eric H. Maslen\nPage: 84-95</span>\n<span class=\"paragraph\">From: \"Magnetic Bearings. Theory, Design, and Application to Rotating Machinery\"\nAuthors: Gerhard Schweitzer and Eric H. Maslen\nPage: 354</span>\n<span class=\"paragraph\">Let's see an example:</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "VCRE",
+      "code_hash": "b8f3af59ebd8f6a0c313db572906b8d2",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><h3 id=\"46-plainjournal-class\">4.6 PlainJournal Class</h3>\n<span class=\"paragraph\">This class computes the pressure and temperature fields within the oil film of a cylindrical bearing while also determining the stiffness and damping coefficients. These calculations are based on a wide range of inputs, including bearing geometry, operating conditions, fluid properties, turbulence modeling, and mesh discretization.</span>\n<span class=\"paragraph\"><strong>Class arguments:</strong></span>\n<ul>\n<li>Bearing geometry:\nParameters like axial_length, journal_radius, radial_clearance, etc., define the physical characteristics.\nIt supports multiple geometries (circular, lobe, or elliptical).</li>\n<li>Operational conditions:\nThe class accounts for the speed, load, and operating type (e.g., \"flooded\" or \"starvation\").</li>\n<li>Fluid properties:\nParameters for lubricant type, oil flow, injection pressure, etc., ensure accurate simulation of fluid dynamics under varying conditions.</li>\n<li>Turbulence model:\nIncorporates turbulence effects using Reynolds numbers and a turbulence scaling factor (delta_turb), which enhances accuracy at higher speeds.</li>\n<li>Mesh discretization:\nAllows detailed control over numerical simulations by adjusting the number of circumferential and axial elements.</li>\n<li>Methodology:\nOffers two methods (lund, perturbation) for dynamic coefficient calculation.</li>\n</ul></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "PSUk",
+      "code_hash": "aeacbac40201997517f9b3ac45ed4666",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><h4 id=\"plot-pressure-distribution\">Plot pressure distribution</h4>\n<span class=\"paragraph\">You can choose the axial element on which you want to see the pressure distribution on the bearing.</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "vGiW",
+      "code_hash": "38127a0a0c66e04044d03f7bf95e5c9c",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><h3 id=\"47-creating-bearing-elements-via-excel\">4.7 Creating bearing elements via Excel</h3>\n<span class=\"paragraph\">There's an option for creating bearing elements via an Excel file. The classmethod <code>.from_table()</code> reads an Excel file and converts it to a <code>BearingElement</code> instance. Differently from creating shaft or disk elements, this method creates only a single bearing element. To create a list of bearing elements, the user should open several spreadsheets in the Excel file and run a list comprehension loop appending each element to the list.</span>\n<span class=\"paragraph\">A header with the names of the columns is required. These names should match the names expected by the routine (usually the names of the parameters, but also similar ones). The program will read every row below the header until they end or it reaches a NaN, which means if the code reaches an empty line, it stops iterating.</span>\n<div class=\"language-text codehilite\"><pre><span></span><code>n : int\n    The node in which the bearing will be located in the rotor.\nfile: str\n    Path to the file containing the bearing parameters.\nsheet_name: int or str, optional\n    Position of the sheet in the file (starting from 0) or its name. If none is passed, it is\n    assumed to be the first sheet in the file.\n</code></pre></div>\n<span class=\"paragraph\">An example of Excel content can be found at directory <em>ross/tests/data/bearing_seal_si.xls</em>, spreadsheet \"XLUserKCM\".</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "bMrW",
+      "code_hash": "3b822d97027adf22ecba4d9f85ed0708",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><span class=\"paragraph\">As <code>.from_table()</code> creates only a single bearing, let's see an example how to create multiple elements without typing the same command line multiple times.</span>\n<ul>\n<li>First, in the EXCEL file, create multiple spreadsheets. Each one must hold the bearing coefficients and frequency data.</li>\n<li>Then, create a list holding the node numbers for each bearing (respecting the order of the spreadsheets from the EXCEL file).</li>\n<li>Finally, create a loop which iterates over the the nodes list and the spreadsheet.</li>\n</ul></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "OfTS",
+      "code_hash": "e37c888c35d6791759713402d6dbcf0f",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><h2 id=\"section-5-pointmass-class\">Section 5: PointMass Class</h2>\n<span class=\"paragraph\">The <code>PointMass</code> class creates a point mass element. This element can be used to link other elements in the analysis. The mass provided can be different on the x and y direction (e.g. different support inertia for x and y directions).</span>\n<span class=\"paragraph\"><code>PointMass</code> also keeps the mass, stiffness, damping and gyroscopic matrices sizes consistence. When adding 2 bearing elements in series, it opens a new node with new degrees of freedom (DoF) (<em>see section 4.1.3</em>) and expands the stiffness and damping matrices. For this reason, it's necessary to add mass values to those DoF to match the matrices sizes.</span>\n<span class=\"paragraph\">If you input the argument <code>m</code>, the code automatically replicate the mass value for both directions \"x\" and \"y\".</span>\n<span class=\"paragraph\">Let's see an example of creating point masses:</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "rSYo",
+      "code_hash": "49d9486a8772ee22dd00af2299c06410",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><h2 id=\"section-6-rotor-class\">Section 6: Rotor Class</h2>\n<span class=\"paragraph\"><code>Rotor</code> is the main class from ROSS. It takes as argument lists with all elements and assembles the mass, gyroscopic, damping and stiffness global matrices for the system. The object created has several methods that can be used to evaluate the dynamics of the model (they all start with the prefix <code>.run_</code>).</span>\n<span class=\"paragraph\">To use this class, you must input all the already instantiated elements in a list format.</span>\n<span class=\"paragraph\">If the shaft elements are not numbered, the class set a number for each one, according to the element's position in the list supplied to the rotor constructor.</span>\n<span class=\"paragraph\">To assemble the matrices, the <code>Rotor</code> class takes the local DoF's index from each element (element method <code>.dof_mapping()</code>) and calculate the global index</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "HuZB",
+      "code_hash": "17d5dd0bde5a46399900d8e8bf90fc5b",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><h3 id=\"61-creating-a-rotor-model\">6.1 Creating a rotor model</h3>\n<span class=\"paragraph\">Let's create a simple rotor model with <marimo-tex class=\"arithmatex\">||(1.5 m||)</marimo-tex> length with 6 identical shaft elements, 2 disks, 2 bearings in the shaft ends and a support linked to the first bearing. First, we create the elements, then we input them to the <code>Rotor</code> class.</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "Ynfw",
+      "code_hash": "017dc9c5055217b295d610d73c3a8826",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><h3 id=\"62-adding-new-nodes\">6.2 Adding new nodes</h3>\n<span class=\"paragraph\">You can add new nodes to the model based on a list of their positions by using the method <code>.add_nodes()</code>:</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "uDnK",
+      "code_hash": "ea13886d68d71099a30932f5801549d9",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><h3 id=\"63-creating-a-rotor-from-sections\">6.3 Creating a rotor from sections</h3>\n<span class=\"paragraph\">An alternative to build rotor models is dividing the rotor in sections. Each section gets the same number of shaft elements.</span>\n<span class=\"paragraph\">There's an important difference in this class method when placing disks and bearings. The argument <code>n</code> will refer, not to the element node, but to the section node. So if your model has 3 sections with 4 elements each, there're 4 section nodes and 13 element nodes.</span>\n<span class=\"paragraph\">Let's repeat the rotor model from the last example, but using <code>.from_section()</code> class method, without the support.</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "MIsd",
+      "code_hash": "59ff6b567ee25ebfd53a710a5def9f44",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><h3 id=\"64-visualizing-the-rotor-model\">6.4 Visualizing the rotor model</h3>\n<span class=\"paragraph\">It is interesting to plot the rotor to check if the geometry checks with what you wanted to the model. Use the <code>.plot_rotor()</code> method to create a plot.</span>\n<span class=\"paragraph\"><code>nodes</code> argument is useful when your model has lots of nodes and the visualization of nodes label may be confusing. Set an increment to the plot nodes label</span>\n<span class=\"paragraph\">ROSS uses <strong>PLOTLY</strong> as main plotting library:</span>\n<span class=\"paragraph\">With the Plotly, you can hover the mouse icon over the shaft, disk and point mass elements to check some of their parameters.</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "Lpqv",
+      "code_hash": "5aa7e913a8a5868dc3cb21355c0c3f2a",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><span class=\"paragraph\">Let's visualize another rotor example with <strong>overlapping shaft elements</strong>:</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "pCao",
+      "code_hash": "cd52ab3076288fdba7b0205cdc9f5f75",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><h3 id=\"65-saving-a-rotor-model\">6.5 Saving a rotor model</h3>\n<span class=\"paragraph\">You can save a rotor model using the method <code>.save()</code>. This method saves the each element type and the rotor object in different <em>.toml</em> files.</span>\n<span class=\"paragraph\">You just need to input a name and the diretory, where it will be saved. If you don't input a file_path, the rotor model is saved inside the \"ross\" folder.</span>\n<span class=\"paragraph\">To save the <code>rotor2</code> we can use:</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "wlyU",
+      "code_hash": "c6b5dd82e31dc5f1e305122f03239f1b",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><h3 id=\"66-loading-a-rotor-model\">6.6 Loading a rotor model</h3>\n<span class=\"paragraph\">You can load a rotor model using the method <code>.load()</code>. This method loads a previously saved rotor model.</span>\n<span class=\"paragraph\">You just need to input the file path to the method.</span>\n<span class=\"paragraph\">Now, let's load the <code>rotor2</code> we saved before:</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "GrQN",
+      "code_hash": "9804f976f304d003676f64ad930be72b",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><h3 id=\"67-using-couplingelement-as-lumped-element\">6.7 Using CouplingElement as lumped-element</h3>\n<span class=\"paragraph\">Shafts can be connected using the <code>CouplingElement</code> class, which can also function as a lumped-element model.\nFor instance, a motor can be represented using a <code>CouplingElement</code> by specifying its stiffness, mass, and polar moment of inertia.</span>\n<span class=\"paragraph\">Here's an example:</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "Ilkb",
+      "code_hash": "7d4b8f2dbd3d9a70ce26f91a627f0c90",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><h4 id=\"671-creating-coupling-element\">6.7.1 Creating coupling element</h4></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "vGkK",
+      "code_hash": "33502e1398178f4eb755cc2010c4252f",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><h4 id=\"672-creating-motor-as-lumped-element\">6.7.2 Creating motor as lumped-element</h4></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "NOfw",
+      "code_hash": "20e44cf42ce2bac4c02340a58964bd57",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><h4 id=\"673-connecting-coupling-and-motor-to-the-end\">6.7.3 Connecting coupling and motor to the end</h4>\n<span class=\"paragraph\">Since <code>CouplingElement</code> is a type of <code>ShaftElement</code>, it must be inserted into the appropriate position within the <code>shaft_elements</code> array.</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "mSxP",
+      "code_hash": "b897ed744e112b82be99ac205d9b3a35",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><h4 id=\"676-creating-coupled-rotor\">6.7.6 Creating coupled rotor</h4></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "UFLA",
+      "code_hash": "19e45b775f310afdad1f99c58e9b69d5",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><h2 id=\"section-7-ross-units-system\">Section 7: ROSS Units System</h2>\n<span class=\"paragraph\">ROSS uses an units system package called <a href=\"https://pint.readthedocs.io/en/stable/\" rel=\"noopener noreferrer\" target=\"_blank\">Pint</a>.</span>\n<span class=\"paragraph\"><code>Pint</code> defines, operates and manipulates <strong>physical quantities</strong>: the product of a numerical value and a unit of measurement. It allows arithmetic operations between them and conversions from and to different units.</span>\n<span class=\"paragraph\">With <code>Pint</code>, it's possible to define units to every element type available in ROSS and manipulate the units when plotting graphs. ROSS takes the user-defined units and internally converts them to the International System (SI).</span>\n<span class=\"paragraph\"><strong>Important</strong>: It's not possible to manipulate units for attributes from any class. Attributes' values are always returned converted to SI. <strong>Only plot methods</strong> are able to manipulate the output unit.</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "RCUM",
+      "code_hash": "6a361cfbcac8720d4c371bc5b8f25cd3",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><h3 id=\"71-inserting-units\">7.1 Inserting units</h3>\n<span class=\"paragraph\">Working with <code>Pint</code> requires a specific syntax to assign an unit to an argument.</span>\n<span class=\"paragraph\">First of all, it's necessary to import a function called <code>Q_</code> from <code>ross.units</code>. This function must be assigned to every variable that are desired to have units, followed by a <em>tuple</em> containing the magnitude and the unit (in string format).</span>\n<span class=\"paragraph\">The example below shows how to create a material using <code>Pint</code>, and how it is returned to the user.</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "NBGo",
+      "code_hash": "0a020926a37f096001858f30143e7b89",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><span class=\"paragraph\"><strong>Note</strong>: Taking a closer look to the output values, the material density is converted to the SI and it's returned this way to the user.</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "ChmK",
+      "code_hash": "fa8bd17f9293537362aef0afdd6c76ff",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><span class=\"paragraph\">The same syntax applies to elements instantiation, if units are desired. Besides, notice the output is displayed in SI units.</span>\n<h4 id=\"shaft-element-using-pint\">Shaft Element using Pint</h4></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "vkvV",
+      "code_hash": "179d8d81fc3ed78500b92827b7ec4953",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><h4 id=\"bearing-element-using-pint\">Bearing Element using Pint</h4></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "tasN",
+      "code_hash": "326a786de82bd7644833237b2f4ed6c5",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><h3 id=\"72-manipulating-units-for-plotting\">7.2 Manipulating units for plotting</h3>\n<span class=\"paragraph\">The plot methods presents arguments to change the units for each axis. This kind of manipulation does not affect the resulting data stored. It only converts the data on the graphs.</span>\n<span class=\"paragraph\">The arguments names follow a simple logic. It is the \"axis name\" underscore \"units\" (axisname_units). It should help the user to identify which axis to modify. For example:</span>\n<ul>\n<li>\n<span class=\"paragraph\">frequency_units:</span>\n<ul>\n<li>\"rad/s\", \"RPM\", \"Hz\"...</li>\n</ul>\n</li>\n<li>\n<span class=\"paragraph\">amplitude_units:</span>\n<ul>\n<li>\"m\", \"mm\", \"in\", \"foot\"...</li>\n</ul>\n</li>\n<li>\n<span class=\"paragraph\">displacement_units:</span>\n<ul>\n<li>\"m\", \"mm\", \"in\", \"foot\"...</li>\n</ul>\n</li>\n<li>\n<span class=\"paragraph\">rotor_length_units:</span>\n<ul>\n<li>\"m\", \"mm\", \"in\", \"foot\"...</li>\n</ul>\n</li>\n<li>\n<span class=\"paragraph\">moment_units:</span>\n<ul>\n<li>\"N/m\", \"lbf/foot\"...</li>\n</ul>\n</li>\n</ul>\n<span class=\"paragraph\">It's not necessary to add units previously to each element or material to use <code>Pint</code> with plots. But keep in mind ROSS will considers results values in the SI units.</span>\n<span class=\"paragraph\"><strong>Note</strong>: If you input data using the Imperial System, for example, without using Pint, ROSS will consider it's in SI if you try to manipulate the units when plotting.</span>\n<span class=\"paragraph\">Let's run a simple example of manipulating units for plotting.</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "CFll",
+      "code_hash": "74acde19a770f699b4be4af1f9d3920a",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><span class=\"paragraph\">Plotting with default options will bring graphs with SI units. X and Y axes representing the frequencies are set to <code>rad/s</code></span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "viyg",
+      "code_hash": "c551e39faf2c387ff03a9fe3227cb67e",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><span class=\"paragraph\">Now, let's change the units to <code>RPM</code>.</span>\n<span class=\"paragraph\">Just by adding <code>frequency_units=\"rpm\"</code> to plot method, you'll change the plot units.</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "Hbol",
+      "code_hash": "1d0db38904205bec4d6f6f6a1f6cec3e",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/plain": ""
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "bkHC",
+      "code_hash": "37858a3cdb80f243220cb380984c95f7",
+      "outputs": [
+        {
+          "type": "error",
+          "ename": "exception",
+          "evalue": "No module named 'numpy'",
+          "traceback": []
+        }
+      ],
+      "console": [
+        {
+          "type": "stream",
+          "name": "stderr",
+          "text": "<span class=\"codehilite\"><div class=\"highlight\"><pre><span></span><span class=\"gt\">Traceback (most recent call last):</span>\n  File <span class=\"nb\">&quot;/tmp/marimo_50761/__marimo__cell_bkHC_.py&quot;</span>, line <span class=\"m\">3</span>, in <span class=\"n\">&lt;module&gt;</span>\n<span class=\"w\">    </span><span class=\"kn\">import</span><span class=\"w\"> </span><span class=\"nn\">numpy</span><span class=\"w\"> </span><span class=\"k\">as</span><span class=\"w\"> </span><span class=\"nn\">np</span>\n<span class=\"gr\">ModuleNotFoundError</span>: <span class=\"n\">No module named &#39;numpy&#39;</span>\n</pre></div>\n</span>",
+          "mimetype": "application/vnd.marimo+traceback"
+        }
+      ]
+    },
+    {
+      "id": "Xref",
+      "code_hash": "98a9e37bf4daf37ae53307cd49517ec9",
+      "outputs": [],
+      "console": []
+    },
+    {
+      "id": "RGSE",
+      "code_hash": "9ba621553ed15e1292c603f11e8d72b3",
+      "outputs": [],
+      "console": []
+    },
+    {
+      "id": "emfo",
+      "code_hash": "51db0ad1a5eb926fe010685a1778f5b7",
+      "outputs": [],
+      "console": []
+    },
+    {
+      "id": "nWHF",
+      "code_hash": "23b9f1183ad8267093c2ad11694b5ef2",
+      "outputs": [],
+      "console": []
+    },
+    {
+      "id": "qnkX",
+      "code_hash": "86c8d2b6d5b5f8474b5144cfc9533a8f",
+      "outputs": [],
+      "console": []
+    },
+    {
+      "id": "Vxnm",
+      "code_hash": "b3bac4a31ff50c482299602247ce3e97",
+      "outputs": [],
+      "console": []
+    },
+    {
+      "id": "ulZA",
+      "code_hash": "704fe3c3ce90a7e01797c168a4825250",
+      "outputs": [],
+      "console": []
+    },
+    {
+      "id": "Pvdt",
+      "code_hash": "9860d6e784ba11d835f6bcd66cfba085",
+      "outputs": [],
+      "console": []
+    },
+    {
+      "id": "aLJB",
+      "code_hash": "58b28f9465ab83ac238b5c0da5a6d5d4",
+      "outputs": [],
+      "console": []
+    },
+    {
+      "id": "nHfw",
+      "code_hash": "5ebbf838a1a00bf81d9be80292031a69",
+      "outputs": [],
+      "console": []
+    },
+    {
+      "id": "aqbW",
+      "code_hash": "6d095fbf69e73a6d9b28b24196b7351a",
+      "outputs": [],
+      "console": []
+    },
+    {
+      "id": "TRpd",
+      "code_hash": "6ac7926a094445f8f4785a70cc73e169",
+      "outputs": [],
+      "console": []
+    },
+    {
+      "id": "yCnT",
+      "code_hash": "671da7a875990fc0c96abb0493d4e557",
+      "outputs": [],
+      "console": []
+    },
+    {
+      "id": "kqZH",
+      "code_hash": "56b4d2737e746112e34a815266ca8a94",
+      "outputs": [],
+      "console": []
+    },
+    {
+      "id": "SdmI",
+      "code_hash": "ab6e59219796caf4cf186fd2fc12b40b",
+      "outputs": [],
+      "console": []
+    },
+    {
+      "id": "yOPj",
+      "code_hash": "f83d27248aba62e547d46f3947e9a1c7",
+      "outputs": [],
+      "console": []
+    },
+    {
+      "id": "fwwy",
+      "code_hash": "92b83623fec610aec7cbdde280b37270",
+      "outputs": [],
+      "console": []
+    },
+    {
+      "id": "jxvo",
+      "code_hash": "3123f26d10e6c76a44d182a47bbe2462",
+      "outputs": [],
+      "console": []
+    },
+    {
+      "id": "CcZR",
+      "code_hash": "baffaf61ff4192b0153aab5a707d9bf9",
+      "outputs": [],
+      "console": []
+    },
+    {
+      "id": "YWSi",
+      "code_hash": "891c6ed9edf03dabe832508ea132cc63",
+      "outputs": [],
+      "console": []
+    },
+    {
+      "id": "tZnO",
+      "code_hash": "49003a6febac5608b2ff230644ce6d09",
+      "outputs": [],
+      "console": []
+    },
+    {
+      "id": "cEAS",
+      "code_hash": "9881b62ef15edb37de5b66ce6a7129b5",
+      "outputs": [],
+      "console": []
+    },
+    {
+      "id": "EJmg",
+      "code_hash": "039378f7d3066135327368acb0d1ac48",
+      "outputs": [],
+      "console": []
+    },
+    {
+      "id": "IpqN",
+      "code_hash": "1b1fdb0f05cad91bfae4646a6b89a6f3",
+      "outputs": [],
+      "console": []
+    },
+    {
+      "id": "dlnW",
+      "code_hash": "7dc0db803eaa26087c86db86922f866b",
+      "outputs": [],
+      "console": []
+    },
+    {
+      "id": "TTti",
+      "code_hash": "60581e93a965bd8aeb07fb5b511700de",
+      "outputs": [],
+      "console": []
+    },
+    {
+      "id": "RKFZ",
+      "code_hash": "8c5ec63a7d6e8bbe9f797b4d7f8e693b",
+      "outputs": [],
+      "console": []
+    },
+    {
+      "id": "IWgg",
+      "code_hash": "82a8b20bf8a8011fae3e32499ceec93b",
+      "outputs": [],
+      "console": []
+    },
+    {
+      "id": "LkGn",
+      "code_hash": "6fa3d8820bd015cf2fc56e5702f93d2b",
+      "outputs": [],
+      "console": []
+    },
+    {
+      "id": "woaO",
+      "code_hash": "ab98520d2702b8dd9cadf5880b1be837",
+      "outputs": [],
+      "console": []
+    },
+    {
+      "id": "wadT",
+      "code_hash": "8b8cf242ed3ec4be44d4561a1c0c7de8",
+      "outputs": [],
+      "console": []
+    },
+    {
+      "id": "hgqU",
+      "code_hash": "dae6a8e7542858baeafbfb3d517e4802",
+      "outputs": [],
+      "console": []
+    },
+    {
+      "id": "mfOT",
+      "code_hash": "2bbb15cc3279c988759f44dde7b59bee",
+      "outputs": [],
+      "console": []
+    },
+    {
+      "id": "SYQT",
+      "code_hash": "eafcd1ca657f263251bee54bb37ae275",
+      "outputs": [],
+      "console": []
+    },
+    {
+      "id": "PSQn",
+      "code_hash": "56ebb2a29693059062f224a37a1aabe1",
+      "outputs": [],
+      "console": []
+    },
+    {
+      "id": "lQxp",
+      "code_hash": "3d69ae99632dde35e22ad04d8b2d3b5a",
+      "outputs": [],
+      "console": []
+    },
+    {
+      "id": "Plbk",
+      "code_hash": "c2de5b3a6e9589c660da54e08e2ce803",
+      "outputs": [],
+      "console": []
+    },
+    {
+      "id": "WfYj",
+      "code_hash": "1c7bb708cb19a2af8029acdd60ed4bbb",
+      "outputs": [],
+      "console": []
+    },
+    {
+      "id": "LqFA",
+      "code_hash": "0aa87241289dd5274f05818ad61a51c8",
+      "outputs": [],
+      "console": []
+    },
+    {
+      "id": "aWBL",
+      "code_hash": "5248939b0ea6ee12af788d6fa59eb814",
+      "outputs": [],
+      "console": []
+    },
+    {
+      "id": "IrqS",
+      "code_hash": "76f84ea4b627acdd12e5dc789c9f522d",
+      "outputs": [],
+      "console": []
+    },
+    {
+      "id": "upgv",
+      "code_hash": "452e804f22c2b06492d4361c42bbceea",
+      "outputs": [],
+      "console": []
+    },
+    {
+      "id": "WJUG",
+      "code_hash": "3f81a2d5bff60243e1d1ed359397dd44",
+      "outputs": [],
+      "console": []
+    },
+    {
+      "id": "wEIy",
+      "code_hash": "3d8919dcf5c0d2c03126fee9737c283e",
+      "outputs": [],
+      "console": []
+    },
+    {
+      "id": "PieA",
+      "code_hash": "cdff615daeb54b4ceca36886fa74883f",
+      "outputs": [],
+      "console": []
+    },
+    {
+      "id": "mySd",
+      "code_hash": "137288b5a0ef856628ae82f7128be8df",
+      "outputs": [],
+      "console": []
+    },
+    {
+      "id": "zmIa",
+      "code_hash": "11839332471bf664e8552ff166331fcd",
+      "outputs": [],
+      "console": []
+    },
+    {
+      "id": "jXAc",
+      "code_hash": "c38756fee55b02e4ccd94e15124db1b7",
+      "outputs": [],
+      "console": []
+    },
+    {
+      "id": "IZEX",
+      "code_hash": "20e463d1e95211040f6c589a865130dc",
+      "outputs": [],
+      "console": []
+    },
+    {
+      "id": "ynmH",
+      "code_hash": "30520189e99fe82f619775f701af5ff1",
+      "outputs": [],
+      "console": []
+    },
+    {
+      "id": "eooq",
+      "code_hash": "c27c6c847331821fe7e9b7c04bf82ab6",
+      "outputs": [],
+      "console": []
+    },
+    {
+      "id": "KdvC",
+      "code_hash": "ef9744d36cfdecc1fa3bf87772c42c70",
+      "outputs": [],
+      "console": []
+    },
+    {
+      "id": "EKSN",
+      "code_hash": "4b9e6e9ae86ac3eac0c2634ba8043b15",
+      "outputs": [],
+      "console": []
+    },
+    {
+      "id": "SXvM",
+      "code_hash": "898b6929be50a4ba29fd25128e347737",
+      "outputs": [],
+      "console": []
+    },
+    {
+      "id": "wbrJ",
+      "code_hash": "127e2f98cb0e6a9c52b6cda9000aac63",
+      "outputs": [],
+      "console": []
+    },
+    {
+      "id": "GbuD",
+      "code_hash": "3e04c0b6dc341f95fb4e9678bb0429aa",
+      "outputs": [],
+      "console": []
+    }
+  ]
+}

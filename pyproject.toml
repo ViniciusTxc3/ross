@@ -86,6 +86,7 @@ version = {attr = "ross.__version__"}
         "sphinxcontrib-bibtex>=2.2",
         "ruff",
         "sphinx-design",
+        "marimo",
     ]
 
 [project.scripts]
